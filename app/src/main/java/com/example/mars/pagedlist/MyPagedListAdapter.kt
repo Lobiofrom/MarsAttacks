@@ -46,7 +46,7 @@ class MyPagedListAdapter(
     }
 }
 
-class MyViewHolder (val binding: ItemLayoutBinding) : RecyclerView.ViewHolder(binding.root)
+class MyViewHolder(val binding: ItemLayoutBinding) : RecyclerView.ViewHolder(binding.root)
 
 class DiffUtilCallback : DiffUtil.ItemCallback<Photo>() {
     override fun areItemsTheSame(oldItem: Photo, newItem: Photo): Boolean = oldItem.id == newItem.id

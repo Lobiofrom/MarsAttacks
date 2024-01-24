@@ -1,19 +1,27 @@
 package com.example.mars.ui.main
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import androidx.lifecycle.*
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.get
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
+import androidx.paging.PagingData
 import com.example.mars.R
 import com.example.mars.data.State
 import com.example.mars.databinding.FragmentSecondBinding
+import com.example.mars.entity.Camera
 import com.example.mars.entity.Photo
+import com.example.mars.entity.Rover
 import com.example.mars.pagedlist.MyPagedListAdapter
 import jp.wasabeef.recyclerview.animators.SlideInLeftAnimator
 import kotlinx.coroutines.flow.launchIn
@@ -48,7 +56,7 @@ class SecondFragment : Fragment() {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 val rover = arguments?.getString("rover")
                 val date = arguments?.getString("date")
-                return MainViewModel(rover!!, date!!) as T
+                return MainViewModel("rover", "date") as T
             }
         }).get()
 
@@ -87,9 +95,45 @@ class SecondFragment : Fragment() {
             binding.swipeRefresh.isRefreshing = it.refresh is LoadState.Loading
         }.launchIn(viewLifecycleOwner.lifecycleScope)
 
-        viewModel.pagedMarsData.onEach {
-            adapter.submitData(it)
-        }.launchIn(viewLifecycleOwner.lifecycleScope)
+        val camera = Camera(
+            full_name = "",
+            id = 1,
+            name = "",
+            rover_id = 2
+        )
+        val rover = Rover(
+            id = 1,
+            landing_date = "",
+            launch_date = "",
+            name = "Super",
+            status = ""
+        )
+        val list: PagingData<Photo> = PagingData.from(
+            listOf(
+                Photo(
+                    camera = camera,
+                    earth_date = "2024",
+                    id = 1,
+                    img_src = "",
+                    rover = rover,
+                    sol = 1
+                ),
+                Photo(
+                    camera = camera,
+                    earth_date = "2025",
+                    id = 2,
+                    img_src = "",
+                    rover = rover,
+                    sol = 2
+                )
+            )
+        )
+        viewLifecycleOwner.lifecycleScope.launch {
+            adapter.submitData(list)
+        }
+//        viewModel.pagedMarsData.onEach {
+//            adapter.submitData(it)
+//        }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
     private fun onItemClick(item: Photo, imageView: ImageView) {
@@ -103,7 +147,8 @@ class SecondFragment : Fragment() {
         bundle.putString("camera", camera)
         bundle.putString("date", date)
 
-        val extras = FragmentNavigatorExtras(imageView to resources.getString(R.string.transitionName))
+        val extras =
+            FragmentNavigatorExtras(imageView to resources.getString(R.string.transitionName))
 
         findNavController().navigate(
             R.id.action_secondFragment_to_thirdFragment,
